@@ -28,13 +28,23 @@ resource "aws_vpc_ipam_pool" "test" {
 
 resource "aws_vpc_ipam_pool_cidr" "test" {
   ipam_pool_id = aws_vpc_ipam_pool.test.id
-  cidr         = "10.0.0.0/16"
+  cidr         = "10.0.0.0/8"
 }
 
 resource "aws_vpc" "test" {
   ipv4_ipam_pool_id   = aws_vpc_ipam_pool.test.id
-  ipv4_netmask_length = 24
+  ipv4_netmask_length = 16
   depends_on = [
     aws_vpc_ipam_pool_cidr.test
   ]
+}
+
+resource "aws_subnet" "public" {
+  vpc_id     = aws_vpc.test.id
+  cidr_block = cidrsubnet(aws_vpc.test.cidr_block, 8, 0)
+}
+
+resource "aws_subnet" "private" {
+  vpc_id     = aws_vpc.test.id
+  cidr_block = cidrsubnet(aws_vpc.test.cidr_block, 8, 1)
 }
